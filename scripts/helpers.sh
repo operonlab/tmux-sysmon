@@ -27,8 +27,10 @@ sysmon_runtime_dir() {
 	_base="${TMUX_TMPDIR:-/tmp}"
 	_dir="${_base}/tmux-sysmon-$(id -u)"
 	if [ ! -d "$_dir" ]; then
-		mkdir -p "$_dir" 2>/dev/null || return 1
-		chmod 700 "$_dir" 2>/dev/null || true
+		# Create atomically at mode 0700 (no umask window where it is briefly
+		# world-accessible). -m implies no -p, which is fine: TMUX_TMPDIR / /tmp
+		# is the always-present parent and only the final component is ours.
+		mkdir -m 700 "$_dir" 2>/dev/null || return 1
 	fi
 	# Reject a symlink standing in for the directory (anti pre-plant).
 	if [ ! -d "$_dir" ] || [ -L "$_dir" ]; then
