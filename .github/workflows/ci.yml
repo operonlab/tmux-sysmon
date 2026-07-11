@@ -23,7 +23,8 @@ jobs:
             scripts/collect-linux.sh \
             scripts/sysmon.sh \
             scripts/teardown.sh \
-            test/smoke.sh
+            test/smoke.sh \
+            test/stat-mtime.sh
 
   smoke:
     name: functional smoke (Linux collector + tmux integration)
@@ -43,3 +44,9 @@ jobs:
       # enforced statically there (GitHub's Linux runners ship bash 5).
       - name: Run smoke suite
         run: bash test/smoke.sh
+      # Guards the cross-platform stat_mtime() helper against a GNU/BSD stat
+      # dialect regression: on the Ubuntu runner this exercises the real GNU
+      # stat AND a synthetic GNU-style shim, so a stale-throttle break on Linux
+      # fails CI (the smoke suite cannot — it warms the cache before reading).
+      - name: Run stat_mtime regression guard
+        run: bash test/stat-mtime.sh

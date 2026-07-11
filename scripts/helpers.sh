@@ -48,9 +48,14 @@ stat_mtime() {
 		printf '0'
 		return 0
 	fi
-	_m=$(stat -f %m "$_f" 2>/dev/null)
+	# Order matters. GNU/busybox stat reads `-f` as "file system" (not "format"),
+	# so `stat -f %m FILE` there prints a multi-line fs block to stdout and exits
+	# non-zero — non-empty and non-numeric, which would sanitize to 0 below and
+	# make every cache look stale. So try GNU `-c %Y` first (empty on macOS) and
+	# only then fall back to BSD `-f %m` (empty on GNU).
+	_m=$(stat -c %Y "$_f" 2>/dev/null)
 	if [ -z "$_m" ]; then
-		_m=$(stat -c %Y "$_f" 2>/dev/null)
+		_m=$(stat -f %m "$_f" 2>/dev/null)
 	fi
 	case "$_m" in
 		'' | *[!0-9]*) _m=0 ;;
