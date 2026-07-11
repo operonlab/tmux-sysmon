@@ -183,11 +183,16 @@ directly: `~/.tmux/plugins/tmux-sysmon/scripts/collect-macos.sh /` (or
 
 ## Requirements
 
-- **tmux 1.8 or newer.** The plugin only uses long-stable features: `@`-prefixed
-  user options (tmux 1.7), `show-options -q` (tmux 1.8), and asynchronous
-  `#(shell-command)` expansion in the status line (tmux 1.8), verified against
-  the official
-  [tmux CHANGES](https://github.com/tmux/tmux/blob/master/CHANGES).
+- **tmux 1.8 or newer.** This floor is verified against primary sources, not
+  guessed. The plugin depends on `@`-prefixed user options and the
+  `show-options -q` / `-v` flags — all of which landed together in **tmux 1.8**
+  (the "CHANGES FROM 1.7 TO 1.8" section of the official
+  [tmux CHANGES](https://github.com/tmux/tmux/blob/master/CHANGES) adds `@` user
+  options and `show-options -q`; the tmux 1.8 manual page gives the
+  `show-options` synopsis as `[-gqsvw]`, i.e. `-v` is present). The status-line
+  `#(shell-command)` mechanism the tokens plug into is far older; the plugin
+  supplies its **own** non-blocking cache, so it never relies on any newer
+  asynchronous-`#()` behaviour.
 - **Tested on:** tmux `next-3.8` (development build) on macOS. The Linux
   collector is exercised for real in CI on `ubuntu-latest`.
 - **No `jq` or other runtime dependencies** — collection uses only `awk`, `df`,
