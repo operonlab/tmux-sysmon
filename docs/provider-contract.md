@@ -82,7 +82,7 @@ cache goes stale:
 
 ```tmux
 set -g @sysmon-provider '/opt/metrics/my-collector --format sysmon-json'
-set -g @plugin 'joneshong-skills/tmux-sysmon'
+set -g @plugin 'joneshong/tmux-sysmon'
 ```
 
 Requirements for the program:

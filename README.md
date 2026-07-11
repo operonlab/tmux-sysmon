@@ -62,7 +62,7 @@ Then add tmux-sysmon. Put this line in your `~/.tmux.conf` **above** the
 `run '~/.tmux/plugins/tpm/tpm'` line:
 
 ```tmux
-set -g @plugin 'joneshong-skills/tmux-sysmon'
+set -g @plugin 'joneshong/tmux-sysmon'
 ```
 
 #### Path B — without TPM (one line, no plugin manager)
@@ -70,7 +70,7 @@ set -g @plugin 'joneshong-skills/tmux-sysmon'
 Clone it anywhere, then add one line to `~/.tmux.conf`:
 
 ```sh
-git clone https://github.com/joneshong-skills/tmux-sysmon ~/.tmux/plugins/tmux-sysmon
+git clone https://github.com/joneshong/tmux-sysmon ~/.tmux/plugins/tmux-sysmon
 printf '%s\n' "run-shell '~/.tmux/plugins/tmux-sysmon/sysmon.tmux'" >> ~/.tmux.conf
 ```
 
