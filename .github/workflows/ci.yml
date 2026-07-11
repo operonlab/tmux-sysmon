@@ -1,0 +1,45 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  shellcheck:
+    name: shellcheck (-S warning)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Lint all shell files
+        run: |
+          shellcheck -S warning \
+            sysmon.tmux \
+            scripts/helpers.sh \
+            scripts/lib-collect.sh \
+            scripts/collect-macos.sh \
+            scripts/collect-linux.sh \
+            scripts/sysmon.sh \
+            scripts/teardown.sh \
+            test/smoke.sh
+
+  smoke:
+    name: functional smoke (Linux collector + tmux integration)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install tmux
+        run: sudo apt-get update && sudo apt-get install -y tmux
+      - name: Show tmux version
+        run: tmux -V
+      # The Linux collector reads /proc + df + netstat-free interfaces, all of
+      # which are real on the runner, so Part 1 of the smoke suite exercises
+      # collect-linux.sh for real (two samples → full contract JSON, cpu_pct in
+      # range, network rate + state file). Part 2 sources the plugin on a private
+      # `tmux -L` socket. macOS-specific code (collect-macos.sh) is only checked
+      # statically by the shellcheck job above; bash 3.2 compatibility is likewise
+      # enforced statically there (GitHub's Linux runners ship bash 5).
+      - name: Run smoke suite
+        run: bash test/smoke.sh
