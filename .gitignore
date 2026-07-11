@@ -1,0 +1,7 @@
+# Editor / OS cruft
+.DS_Store
+*.swp
+*~
+
+# Nothing runtime lives in the repo — the metrics cache and net sampling state
+# are written under ${TMUX_TMPDIR:-/tmp}/tmux-sysmon-<uid>/, never here.
