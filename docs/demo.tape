@@ -1,46 +1,45 @@
-# tmux-sysmon demo — recorded with vhs (https://github.com/charmbracelet/vhs)
-#   cd tmux-sysmon && vhs docs/demo.tape
-#
-# Runs entirely inside a throwaway, isolated tmux server (-L vhsdemo-sysmon,
-# -f /dev/null) so it never touches your real tmux. The setup is hidden; the
-# recording shows the four #{sysmon_*} tokens rendering live CPU / memory /
-# disk / network readouts in the status bar.
-
+# tmux-sysmon demo — live CPU / MEM / DISK / NET capsules in a cockpit status bar.
+# Fully self-contained: docs/demo-setup.sh stages an anonymous shell and a
+# catppuccin-mocha ISOLATED tmux server (socket sm-demo), then loads the plugin
+# so the four #{sysmon_*} tokens render this machine's REAL readings. The theme
+# owns status-left AND status-right (the default status-right leaks the hostname),
+# and the plugin's pills sit at the tail — behind the clock capsule.
+# Re-record from the repo root with:  vhs docs/demo.tape
 Output "docs/demo.gif"
+Require tmux
+
 Set Shell "bash"
-Set FontSize 15
-Set Width 1200
-Set Height 660
-Set Padding 12
-Set TypingSpeed 40ms
+Set FontFamily "MesloLGS Nerd Font Mono"
+Set FontSize 20
+Set Width 1600
+Set Height 480
+Set Padding 20
+Set TypingSpeed 35ms
 
 Hide
-Type "tmux -L vhsdemo-sysmon -f /dev/null new-session -d -s demo 'bash --norc -i'"
+Type "bash docs/demo-setup.sh"
 Enter
-Type "tmux -L vhsdemo-sysmon attach -t demo"
+Sleep 3s
+Type "clear; tmux -L sm-demo attach -t demo"
 Enter
-Sleep 800ms
-Type "PS1='❯ '; clear"
-Enter
-Type "tmux -L vhsdemo-sysmon set -g status-interval 2 \; set -g status-right-length 200"
-Enter
-Type "tmux -L vhsdemo-sysmon set -g @sysmon-disk-path '/System/Volumes/Data'"
-Enter
-Type "tmux -L vhsdemo-sysmon set -g status-right ' CPU #{sysmon_cpu} | MEM #{sysmon_mem} | DISK #{sysmon_disk} | NET #{sysmon_net} '"
-Enter
-Type "./sysmon.tmux"
-Enter
-Type "clear"
-Enter
-Sleep 7s
+Sleep 2500ms
 Show
-Type "# tmux-sysmon: live CPU / MEM / DISK / NET in the status bar"
+
+# the cockpit: clock capsule, then the four live sysmon capsules on the right
+Sleep 3s
+Type "# tmux-sysmon: live CPU / MEM / DISK / NET, read from a cache — never blocks tmux"
 Enter
-Sleep 2.5s
+Sleep 2500ms
+
+# stir the network counters -> the NET capsule ticks up on the next refresh
 Type "curl -s https://example.com > /dev/null && echo refreshed"
 Enter
 Sleep 4s
+
 Hide
-Type "tmux -L vhsdemo-sysmon kill-server"
+Ctrl+B
+Type "d"
+Sleep 400ms
+Type "tmux -L sm-demo kill-server"
 Enter
 Sleep 500ms
