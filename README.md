@@ -5,6 +5,10 @@
 **CPU, memory, disk and network speed as four drop-in `#{...}` placeholders for
 your tmux status line.** Works on **macOS and Linux** out of the box.
 
+![tmux-sysmon status bar showing live CPU, memory, disk and network readings](docs/screenshot.png)
+
+*The four `#{sysmon_*}` tokens rendering real CPU / memory / disk / network values, styled into a tmux status line.*
+
 ## What is this?
 
 tmux can show a status bar along the bottom of the screen. tmux-sysmon adds four
