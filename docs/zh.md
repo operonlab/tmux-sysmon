@@ -87,7 +87,7 @@ tmux source ~/.tmux.conf   # 重新載入設定
 
 ## Demo
 
-*Demo GIF coming soon.*
+![tmux-sysmon demo](demo.gif)
 
 ## 選項
 

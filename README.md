@@ -98,7 +98,7 @@ Within a few seconds the four readouts appear and refresh on their own.
 
 ## Demo
 
-*Demo GIF coming soon.*
+![tmux-sysmon demo](docs/demo.gif)
 
 ## Options
 
