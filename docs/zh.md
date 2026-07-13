@@ -52,7 +52,7 @@ tmux source ~/.tmux.conf
 接著在 `~/.tmux.conf` 裡、`run '~/.tmux/plugins/tpm/tpm'` 那行的**上方**加入：
 
 ```tmux
-set -g @plugin 'joneshong/tmux-sysmon'
+set -g @plugin 'operonlab/tmux-sysmon'
 ```
 
 #### 路徑 B — 不用 TPM（一行，免外掛管理器）
@@ -60,7 +60,7 @@ set -g @plugin 'joneshong/tmux-sysmon'
 隨便找個位置 clone，然後在 `~/.tmux.conf` 加一行：
 
 ```sh
-git clone https://github.com/joneshong/tmux-sysmon ~/.tmux/plugins/tmux-sysmon
+git clone https://github.com/operonlab/tmux-sysmon ~/.tmux/plugins/tmux-sysmon
 printf '%s\n' "run-shell '~/.tmux/plugins/tmux-sysmon/sysmon.tmux'" >> ~/.tmux.conf
 ```
 
