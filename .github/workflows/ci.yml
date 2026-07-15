@@ -24,7 +24,8 @@ jobs:
             scripts/sysmon.sh \
             scripts/teardown.sh \
             test/smoke.sh \
-            test/stat-mtime.sh
+            test/stat-mtime.sh \
+            test/thresholds.sh
 
   smoke:
     name: functional smoke (Linux collector + tmux integration)
@@ -50,3 +51,8 @@ jobs:
       # fails CI (the smoke suite cannot — it warms the cache before reading).
       - name: Run stat_mtime regression guard
         run: bash test/stat-mtime.sh
+      # The severity-coloring path (@sysmon-thresholds on) is exercised on a
+      # private `tmux -L` socket with a planted cache — cpu/mem/disk boundary
+      # tiers and net-never-colors, none of which the smoke suite reaches.
+      - name: Run threshold coloring regression guard
+        run: bash test/thresholds.sh
