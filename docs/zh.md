@@ -102,6 +102,11 @@ tmux source ~/.tmux.conf   # 重新載入設定
 | `@sysmon-interval` | `5` | 背景每隔幾秒重新量測一次。越小越即時，工作量略增。 |
 | `@sysmon-disk-path` | `/` | 磁碟讀數要量哪個檔案系統，可指向任何掛載路徑。 |
 | `@sysmon-provider` | *(未設)* | 用你自己的 collector 取代內建的。請見下方警告。 |
+| `@sysmon-thresholds` | `off` | 開啟嚴重度上色。設為 `on` 時，cpu/mem/disk 超過 warn % 轉黃、超過 crit % 轉紅（net 永遠不上色）。`off` = 完全純文字、零行為變化。 |
+| `@sysmon-cpu-warn` / `@sysmon-cpu-crit` | `60` / `85` | CPU % 到達多少時轉為 warn / crit 顏色。 |
+| `@sysmon-mem-warn` / `@sysmon-mem-crit` | `70` / `90` | 記憶體 % 門檻。 |
+| `@sysmon-disk-warn` / `@sysmon-disk-crit` | `80` / `95` | 磁碟 % 門檻。 |
+| `@sysmon-warn-style` / `@sysmon-crit-style` | `#[fg=#f9e2af]` / `#[fg=#f38ba8]` | warn / crit 層套用的 tmux 樣式，任何 `#[...]` 樣式字串皆可。 |
 
 另外，tmux 本身的 `status-interval`（例如 `set -g status-interval 5`）決定狀態列
 多久**重繪**一次，把它設得跟 `@sysmon-interval` 接近，新數值才會即時顯示。

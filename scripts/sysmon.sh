@@ -33,6 +33,7 @@ case "$interval" in '' | *[!0-9]*) interval=5 ;; esac
 
 provider=$(get_tmux_option "@sysmon-provider" "")
 disk_path=$(get_tmux_option "@sysmon-disk-path" "/")
+thresholds=$(get_tmux_option "@sysmon-thresholds" "off")
 
 now=$(date +%s 2>/dev/null)
 case "$now" in '' | *[!0-9]*) now=0 ;; esac
@@ -63,6 +64,32 @@ run_refresh() {
 	esac
 }
 
+# threshold_style <metric>
+# Print the tmux style prefix for a metric whose cached numeric percent has
+# crossed its warn/crit threshold (crit wins), or nothing when it is below warn
+# or when the metric has no thresholds (net). Reads the pct straight from the
+# non-blocking cache — no extra sampling.
+threshold_style() {
+	case "$1" in
+		cpu) _dw=60; _dc=85 ;;
+		mem) _dw=70; _dc=90 ;;
+		disk) _dw=80; _dc=95 ;;
+		*) return 0 ;;
+	esac
+	_warn=$(get_tmux_option "@sysmon-$1-warn" "$_dw")
+	_crit=$(get_tmux_option "@sysmon-$1-crit" "$_dc")
+	_pct=$(sed -n 's/.*"'"$1"'_pct"[[:space:]]*:[[:space:]]*\([0-9][0-9.]*\).*/\1/p' \
+		"$cache" 2>/dev/null | head -1)
+	[ -z "$_pct" ] && return 0
+	_ws=$(get_tmux_option "@sysmon-warn-style" '#[fg=#f9e2af]')
+	_cs=$(get_tmux_option "@sysmon-crit-style" '#[fg=#f38ba8]')
+	awk -v p="$_pct" -v w="$_warn" -v c="$_crit" -v ws="$_ws" -v cs="$_cs" 'BEGIN {
+		p += 0; w += 0; c += 0
+		if (p >= c) printf "%s", cs
+		else if (p >= w) printf "%s", ws
+	}'
+}
+
 maybe_refresh() {
 	_mtime=$(stat_mtime "$cache")
 	_age=$((now - _mtime))
@@ -91,7 +118,15 @@ maybe_refresh
 
 # Emit the requested display string (empty when the cache is not yet warm).
 if [ -f "$cache" ]; then
-	sed -n 's/.*"'"${field}_display"'"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' \
-		"$cache" 2>/dev/null | head -1
+	style=""
+	[ "$thresholds" = "on" ] && style=$(threshold_style "$field")
+	if [ -n "$style" ]; then
+		display=$(sed -n 's/.*"'"${field}_display"'"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' \
+			"$cache" 2>/dev/null | head -1)
+		[ -n "$display" ] && printf '%s%s#[default]\n' "$style" "$display"
+	else
+		sed -n 's/.*"'"${field}_display"'"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' \
+			"$cache" 2>/dev/null | head -1
+	fi
 fi
 exit 0
