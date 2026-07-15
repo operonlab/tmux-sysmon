@@ -118,6 +118,8 @@ Set any of these in `~/.tmux.conf` **before** the plugin line. All are optional.
 | `@sysmon-mem-warn` / `@sysmon-mem-crit` | `70` / `90` | Memory % thresholds. |
 | `@sysmon-disk-warn` / `@sysmon-disk-crit` | `80` / `95` | Disk % thresholds. |
 | `@sysmon-warn-style` / `@sysmon-crit-style` | `#[fg=#f9e2af]` / `#[fg=#f38ba8]` | tmux style applied at the warn / crit tier. Any `#[...]` style string works. |
+| `@sysmon-stale-indicator` | `off` | When `on`, a capsule is dimmed while its last background refresh failed (frozen data), cleared on the next successful refresh. Natural aging is never flagged — only a real refresh failure. `off` = exact plain output. |
+| `@sysmon-stale-style` | `#[dim]` | tmux style prepended (in front of any threshold color) while a refresh has failed. Any `#[...]` style string works. |
 
 Also remember tmux's own `status-interval` (e.g. `set -g status-interval 5`)
 controls how often the bar is *redrawn* — set it near `@sysmon-interval` so

@@ -107,6 +107,8 @@ tmux source ~/.tmux.conf   # 重新載入設定
 | `@sysmon-mem-warn` / `@sysmon-mem-crit` | `70` / `90` | 記憶體 % 門檻。 |
 | `@sysmon-disk-warn` / `@sysmon-disk-crit` | `80` / `95` | 磁碟 % 門檻。 |
 | `@sysmon-warn-style` / `@sysmon-crit-style` | `#[fg=#f9e2af]` / `#[fg=#f38ba8]` | warn / crit 層套用的 tmux 樣式，任何 `#[...]` 樣式字串皆可。 |
+| `@sysmon-stale-indicator` | `off` | 設為 `on` 時，某膠囊的上次背景 refresh 失敗（資料凍結）就調暗，下次 refresh 成功即還原。自然老化永不標記——只標記真正的 refresh 失敗。`off` = 完全純文字。 |
+| `@sysmon-stale-style` | `#[dim]` | refresh 失敗時疊在（任何 threshold 顏色之前）的 tmux 樣式，任何 `#[...]` 樣式字串皆可。 |
 
 另外，tmux 本身的 `status-interval`（例如 `set -g status-interval 5`）決定狀態列
 多久**重繪**一次，把它設得跟 `@sysmon-interval` 接近，新數值才會即時顯示。
