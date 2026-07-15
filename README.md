@@ -113,6 +113,11 @@ Set any of these in `~/.tmux.conf` **before** the plugin line. All are optional.
 | `@sysmon-interval` | `5` | How often (seconds) the values are re-measured in the background. Smaller = fresher but slightly more work. |
 | `@sysmon-disk-path` | `/` | Which filesystem the disk readout measures. Point it at any mounted path. |
 | `@sysmon-provider` | *(unset)* | Run **your own** collector instead of the built-in one. See the warning below. |
+| `@sysmon-thresholds` | `off` | Turn on severity coloring. When `on`, cpu/mem/disk turn yellow past their warn %, red past their crit % (net is always plain). `off` = exact plain output, no color. |
+| `@sysmon-cpu-warn` / `@sysmon-cpu-crit` | `60` / `85` | CPU % at which the reading turns warn / crit colored. |
+| `@sysmon-mem-warn` / `@sysmon-mem-crit` | `70` / `90` | Memory % thresholds. |
+| `@sysmon-disk-warn` / `@sysmon-disk-crit` | `80` / `95` | Disk % thresholds. |
+| `@sysmon-warn-style` / `@sysmon-crit-style` | `#[fg=#f9e2af]` / `#[fg=#f38ba8]` | tmux style applied at the warn / crit tier. Any `#[...]` style string works. |
 
 Also remember tmux's own `status-interval` (e.g. `set -g status-interval 5`)
 controls how often the bar is *redrawn* — set it near `@sysmon-interval` so
