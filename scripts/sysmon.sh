@@ -34,6 +34,7 @@ case "$interval" in '' | *[!0-9]*) interval=5 ;; esac
 provider=$(get_tmux_option "@sysmon-provider" "")
 disk_path=$(get_tmux_option "@sysmon-disk-path" "/")
 thresholds=$(get_tmux_option "@sysmon-thresholds" "off")
+stale_indicator=$(get_tmux_option "@sysmon-stale-indicator" "off")
 
 now=$(date +%s 2>/dev/null)
 case "$now" in '' | *[!0-9]*) now=0 ;; esac
@@ -58,9 +59,12 @@ run_refresh() {
 	fi
 	# Only replace the cache when we got something JSON-shaped. On timeout or
 	# failure the old cache is left in place so the last-known value keeps showing.
+	# A refresh.fail marker records which happened, so the reader can flag a
+	# capsule that is serving frozen data (never flagged by mere natural aging).
 	case "$_out" in
-		'{'*) printf '%s' "$_out" >"$_tmp" 2>/dev/null && mv "$_tmp" "$cache" 2>/dev/null ;;
-		*) rm -f "$_tmp" 2>/dev/null ;;
+		'{'*) printf '%s' "$_out" >"$_tmp" 2>/dev/null && mv "$_tmp" "$cache" 2>/dev/null \
+			&& rm -f "$dir/refresh.fail" 2>/dev/null ;;
+		*) rm -f "$_tmp" 2>/dev/null; : > "$dir/refresh.fail" 2>/dev/null ;;
 	esac
 }
 
@@ -120,6 +124,11 @@ maybe_refresh
 if [ -f "$cache" ]; then
 	style=""
 	[ "$thresholds" = "on" ] && style=$(threshold_style "$field")
+	# stale indicator: dim the capsule while the last refresh failed (frozen
+	# data), cleared on the next successful refresh. Composes in front of any
+	# threshold color; off by default so output stays byte-identical.
+	[ "$stale_indicator" = "on" ] && [ -f "$dir/refresh.fail" ] \
+		&& style="$(get_tmux_option "@sysmon-stale-style" '#[dim]')$style"
 	if [ -n "$style" ]; then
 		display=$(sed -n 's/.*"'"${field}_display"'"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' \
 			"$cache" 2>/dev/null | head -1)

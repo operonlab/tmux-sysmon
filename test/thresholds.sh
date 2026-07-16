@@ -139,6 +139,63 @@ check "cpu: 5 stays plain"  "no"  "$(contains "$(read_metric cpu)"  '#[')"
 plant_full 99.0 99.0 99.0
 check "net: never colored (no thresholds defined)" "no" "$(contains "$(read_metric net)" '#[')"
 
+# ── 6. stale indicator: dim the capsule ONLY while a refresh failed AND only
+#      when @sysmon-stale-indicator is on; off ⇒ byte-identical output. ──
+tmux -L "$SOCK" set-option -g @sysmon-thresholds off
+plant_cache 10.0 "10%"
+FAILMARK="${RTD}/refresh.fail"
+
+# off (default): a fail marker present must NOT change output
+: > "$FAILMARK"
+tmux -L "$SOCK" set-option -g @sysmon-stale-indicator off
+check "stale off: fail marker ignored (no style)" "no" "$(contains "$(read_metric cpu)" '#[')"
+
+# on + marker present → dim wraps the value
+tmux -L "$SOCK" set-option -g @sysmon-stale-indicator on
+out="$(read_metric cpu)"
+check "stale on + failed: dim style present" "yes" "$(contains "$out" '#[dim]')"
+check "stale on + failed: value still shown" "yes" "$(contains "$out" '10%')"
+
+# on but NO marker (refresh healthy) → no dim
+rm -f "$FAILMARK"
+check "stale on + healthy: no dim" "no" "$(contains "$(read_metric cpu)" '#[dim]')"
+
+# composes in FRONT of a threshold color
+tmux -L "$SOCK" set-option -g @sysmon-thresholds on
+: > "$FAILMARK"
+plant_cache 90.0 "90%"
+check "stale+crit compose: dim before crit color" "yes" \
+	"$(contains "$(read_metric cpu)" "#[dim]${CRIT_STYLE}90%#[default]")"
+rm -f "$FAILMARK"
+
+# write side: run_refresh sets the marker on a failing (non-JSON) provider and
+# clears it on a healthy one. Providers are script files (heredoc) so no quoting
+# survives tmux+sh round-trips. Bounded poll (no fixed sleep) — an echo provider
+# refreshes near-instantly behind the atomic lock.
+PROV_FAIL="${WORK}/prov_fail.sh"; PROV_OK="${WORK}/prov_ok.sh"
+cat > "$PROV_FAIL" <<'EOF'
+#!/bin/sh
+echo NOT_JSON
+EOF
+cat > "$PROV_OK" <<'EOF'
+#!/bin/sh
+echo '{"cpu_pct":1,"cpu_display":"1pct"}'
+EOF
+chmod +x "$PROV_FAIL" "$PROV_OK"
+
+tmux -L "$SOCK" set-option -g @sysmon-stale-indicator on
+tmux -L "$SOCK" set-option -g @sysmon-thresholds off
+tmux -L "$SOCK" set-option -g @sysmon-interval 1
+rm -f "$FAILMARK" "$CACHE"
+tmux -L "$SOCK" set-option -g @sysmon-provider "$PROV_FAIL"
+i=0; while [ "$i" -lt 15 ]; do read_metric cpu >/dev/null; [ -f "$FAILMARK" ] && break; sleep 0.2; i=$((i+1)); done
+check "run_refresh: failing provider sets the fail marker" "yes" "$([ -f "$FAILMARK" ] && echo yes || echo no)"
+
+tmux -L "$SOCK" set-option -g @sysmon-provider "$PROV_OK"
+i=0; while [ "$i" -lt 15 ]; do read_metric cpu >/dev/null; [ -f "$FAILMARK" ] || break; sleep 0.2; i=$((i+1)); done
+check "run_refresh: healthy provider clears the fail marker" "no" "$([ -f "$FAILMARK" ] && echo yes || echo no)"
+tmux -L "$SOCK" set-option -gu @sysmon-provider
+
 echo ""
 if [ "$FAILS" -eq 0 ]; then
 	echo "ALL THRESHOLD CHECKS PASSED"
